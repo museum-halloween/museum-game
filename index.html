@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>萬聖盲盒：命定試煉 - 幻覺博物館</title>
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      background-color: #0c1a24;
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 40px;
+    }
+    .header-area {
+      text-align: center;
+      margin-bottom: 20px;
+      max-width: 400px;
+    }
+    h1 {
+      font-size: 21px;
+      color: #ff9800;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+    p.sub {
+      font-size: 13px;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+    .doors-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      width: 100%;
+      max-width: 400px;
+    }
+    .door-card {
+      background: #162a38;
+      border: 2px solid #2a475d;
+      border-radius: 14px;
+      overflow: hidden;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+      transition: transform 0.15s ease, border-color 0.2s;
+    }
+    .door-card:active {
+      transform: scale(0.96);
+      border-color: #ff9800;
+    }
+    .door-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    #result-view {
+      display: none;
+      width: 100%;
+      max-width: 380px;
+      background: #162a38;
+      border-radius: 16px;
+      border: 1px solid #ff9800;
+      padding: 24px 20px;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(255, 152, 0, 0.2);
+    }
+    .chosen-door-preview {
+      width: 140px;
+      margin: 0 auto 16px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid #446b88;
+    }
+    .chosen-door-preview img {
+      width: 100%;
+      display: block;
+    }
+    .prize-title {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-bottom: 6px;
+    }
+    .prize-name {
+      font-size: 20px;
+      font-weight: bold;
+      color: #00e676;
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 16px;
+    }
+    .badge-available { background: #2e7d32; color: #fff; }
+    .badge-redeemed { background: #c62828; color: #fff; }
+    .staff-box {
+      border-top: 1px dashed #33536d;
+      margin-top: 16px;
+      padding-top: 16px;
+    }
+    .rule-note {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+    button.staff-btn {
+      background: #ff5722;
+      color: #ffffff;
+      border: none;
+      padding: 13px 0;
+      font-size: 15px;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+    }
+    button.staff-btn:disabled {
+      background: #475569;
+      color: #94a3b8;
+      cursor: not-allowed;
+    }
+    #loading {
+      margin-top: 80px;
+      font-size: 15px;
+      color: #cbd5e1;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loading">載入試煉儀式中...</div>
+
+  <!-- 選門畫面 -->
+  <div id="game-view" style="display: none;">
+    <div class="header-area">
+      <h1>【眼見不為憑：4 扇維度之門】</h1>
+      <p class="sub">門後的空間都是假象，憑直覺選一扇門<br>揭開你的萬聖盲盒與命定試煉！</p>
+    </div>
+
+    <div class="doors-grid">
+      <div class="door-card" onclick="openDoor('鏡像之門', 'museum-door-1.png')">
+        <img src="museum-door-1.png" alt="鏡像之門">
+      </div>
+      <div class="door-card" onclick="openDoor('錯視之門', 'museum-door-2.png')">
+        <img src="museum-door-2.png" alt="錯視之門">
+      </div>
+      <div class="door-card" onclick="openDoor('無限之門', 'museum-door-3.png')">
+        <img src="museum-door-3.png" alt="無限之門">
+      </div>
+      <div class="door-card" onclick="openDoor('顛倒之門', 'museum-door-4.png')">
+        <img src="museum-door-4.png" alt="顛倒之門">
+      </div>
+    </div>
+  </div>
+
+  <!-- 開獎/核銷結果畫面 -->
+  <div id="result-view">
+    <div id="badge" class="status-badge badge-available">● 優惠券可使用</div>
+    <div class="chosen-door-preview">
+      <img id="result-img" src="" alt="選擇的門">
+    </div>
+    <div class="prize-title">恭喜開啟【<span id="door-title"></span>】，獲得：</div>
+    <div class="prize-name" id="prize-text"></div>
+
+    <div class="staff-box">
+      <p class="rule-note">離場時請向櫃檯人員出示此畫面<br>⚠️ 請由現場店員點擊下方按鈕，自行點擊無效</p>
+      <button id="redeem-btn" class="staff-btn" onclick="verifyRedemption()">店員專用核銷按鈕</button>
+    </div>
+  </div>
+
+  <script>
+    const MY_LIFF_ID = "2011876398-juvGs4G3";
+
+    const PRIZES = {
+      "鏡像之門": "商品折價券 95 折（現當天使用）",
+      "錯視之門": "桿道夫第二人 8 折",
+      "無限之門": "品牌商品 100 元任選（可補差價）",
+      "顛倒之門": "幻覺帽 T（尺寸顏色以現場為主，換完為止）"
+    };
+
+    let userLineId = "";
+    const STORAGE_KEY = "halloween_museum_record_";
+
+    async function initLIFF() {
+      try {
+        await liff.init({ liffId: MY_LIFF_ID });
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
+        }
+
+        const profile = await liff.getProfile();
+        userLineId = profile.userId;
+
+        document.getElementById('loading').style.display = 'none';
+
+        const existingData = localStorage.getItem(STORAGE_KEY + userLineId);
+        if (existingData) {
+          const record = JSON.parse(existingData);
+          showResult(record.door, record.prize, record.image, record.redeemed);
+        } else {
+          document.getElementById('game-view').style.display = 'block';
+        }
+      } catch (err) {
+        document.getElementById('loading').innerText = "載入失敗，請確認是由 LINE 內開啟連結。";
+      }
+    }
+
+    function openDoor(doorName, doorImg) {
+      const prize = PRIZES[doorName];
+      const record = {
+        door: doorName,
+        prize: prize,
+        image: doorImg,
+        redeemed: false,
+        timestamp: new Date().toISOString()
+      };
+
+      localStorage.setItem(STORAGE_KEY + userLineId, JSON.stringify(record));
+      showResult(doorName, prize, doorImg, false);
+    }
+
+    function showResult(doorName, prize, doorImg, isRedeemed) {
+      document.getElementById('game-view').style.display = 'none';
+      document.getElementById('result-view').style.display = 'block';
+
+      document.getElementById('door-title').innerText = doorName;
+      document.getElementById('prize-text').innerText = prize;
+      document.getElementById('result-img').src = doorImg;
+
+      const badge = document.getElementById('badge');
+      const btn = document.getElementById('redeem-btn');
+
+      if (isRedeemed) {
+        badge.className = "status-badge badge-redeemed";
+        badge.innerText = "✖ 已核銷完畢";
+        btn.disabled = true;
+        btn.innerText = "已由櫃檯完成核銷";
+      } else {
+        badge.className = "status-badge badge-available";
+        badge.innerText = "● 優惠券可使用";
+        btn.disabled = false;
+        btn.innerText = "店員專用核銷按鈕";
+      }
+    }
+
+    function verifyRedemption() {
+      const isConfirmed = confirm("【店員核銷確認】\n確認已發放獎品或折抵？\n按下確認後此優惠券將立即作廢失效！");
+      if (isConfirmed) {
+        const record = JSON.parse(localStorage.getItem(STORAGE_KEY + userLineId));
+        record.redeemed = true;
+        localStorage.setItem(STORAGE_KEY + userLineId, JSON.stringify(record));
+        showResult(record.door, record.prize, record.image, true);
+      }
+    }
+
+    initLIFF();
+  </script>
+</body>
+</html>
