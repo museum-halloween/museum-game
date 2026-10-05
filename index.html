@@ -145,7 +145,6 @@
 
   <div id="loading">載入試煉儀式中...</div>
 
-  <!-- 選門畫面 -->
   <div id="game-view" style="display: none;">
     <div class="header-area">
       <h1>【眼見不為憑：4 扇維度之門】</h1>
@@ -168,7 +167,6 @@
     </div>
   </div>
 
-  <!-- 開獎/核銷結果畫面 -->
   <div id="result-view">
     <div id="badge" class="status-badge badge-available">● 優惠券可使用</div>
     <div class="chosen-door-preview">
@@ -234,11 +232,10 @@
         timestamp: new Date().toISOString()
       };
 
-      // 客人手機端防作弊鎖定
       localStorage.setItem(STORAGE_KEY + userLineId, JSON.stringify(record));
       showResult(doorName, prize, doorImg, false);
 
-      // 即時同步回寫至 Google 試算表後台
+      // 送出至 Google 試算表
       fetch(GOOGLE_SHEET_API, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -284,7 +281,7 @@
         localStorage.setItem(STORAGE_KEY + userLineId, JSON.stringify(record));
         showResult(record.door, record.prize, record.image, true);
 
-        // 即時同步更新 Google 試算表欄位為已核銷
+        // 更新狀態至 Google 試算表
         fetch(GOOGLE_SHEET_API, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
