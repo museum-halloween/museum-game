@@ -185,15 +185,17 @@
 
   <script>
     const MY_LIFF_ID = "2011876398-juvGs4G3";
+    const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbzCC35CGtrQefAlg8eH9dQsmyoL8x04iNUsLWk2U6gxbMSl57X3rJHJg3kJgElAuf808Q/exec";
 
     const PRIZES = {
-      "鏡像之門": "商品折價券 95 折（現當天使用）",
+      "鏡像之門": "商品折價券 95 折（限當天使用）",
       "錯視之門": "桿道夫第二人 8 折",
       "無限之門": "品牌商品 100 元任選（可補差價）",
       "顛倒之門": "幻覺帽 T（尺寸顏色以現場為主，換完為止）"
     };
 
     let userLineId = "";
+    let userDisplayName = "";
     const STORAGE_KEY = "halloween_museum_record_";
 
     async function initLIFF() {
@@ -206,6 +208,7 @@
 
         const profile = await liff.getProfile();
         userLineId = profile.userId;
+        userDisplayName = profile.displayName || "LINE 用戶";
 
         document.getElementById('loading').style.display = 'none';
 
@@ -231,8 +234,22 @@
         timestamp: new Date().toISOString()
       };
 
+      // 客人手機端防作弊鎖定
       localStorage.setItem(STORAGE_KEY + userLineId, JSON.stringify(record));
       showResult(doorName, prize, doorImg, false);
+
+      // 即時同步回寫至 Google 試算表後台
+      fetch(GOOGLE_SHEET_API, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          action: "draw",
+          userId: userLineId,
+          userName: userDisplayName,
+          door: doorName,
+          prize: prize
+        })
+      }).catch(err => console.log(err));
     }
 
     function showResult(doorName, prize, doorImg, isRedeemed) {
@@ -266,6 +283,16 @@
         record.redeemed = true;
         localStorage.setItem(STORAGE_KEY + userLineId, JSON.stringify(record));
         showResult(record.door, record.prize, record.image, true);
+
+        // 即時同步更新 Google 試算表欄位為已核銷
+        fetch(GOOGLE_SHEET_API, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "redeem",
+            userId: userLineId
+          })
+        }).catch(err => console.log(err));
       }
     }
 
