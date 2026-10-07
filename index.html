@@ -91,7 +91,7 @@
       margin-bottom: 6px;
     }
     .prize-name {
-      font-size: 20px;
+      font-size: 19px;
       font-weight: bold;
       color: #00e676;
       margin-bottom: 16px;
@@ -134,16 +134,24 @@
       color: #94a3b8;
       cursor: not-allowed;
     }
-    #loading {
+    #loading, #block-view {
       margin-top: 80px;
       font-size: 15px;
       color: #cbd5e1;
+      text-align: center;
+      line-height: 1.6;
+      max-width: 320px;
     }
   </style>
 </head>
 <body>
 
   <div id="loading">載入試煉儀式中...</div>
+
+  <div id="block-view" style="display: none;">
+    <p style="color: #ff5252; font-weight: bold; font-size: 17px; margin-bottom: 8px;">無法進行試煉</p>
+    <p>本活動限定由 LINE 應用程式開啟。<br>請返回 LINE 點擊連結或掃描官方 QR Code 進入。</p>
+  </div>
 
   <div id="game-view" style="display: none;">
     <div class="header-area">
@@ -185,11 +193,12 @@
     const MY_LIFF_ID = "2011876398-juvGs4G3";
     const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbzCC35CGtrQefAlg8eH9dQsmyoL8x04iNUsLWk2U6gxbMSl57X3rJHJg3kJgElAuf808Q/exec";
 
+    // 更新為指定獎項文案
     const PRIZES = {
-      "鏡像之門": "商品折價券 95 折（限當天使用）",
-      "錯視之門": "桿道夫第二人 8 折",
-      "無限之門": "品牌商品 100 元任選（可補差價）",
-      "顛倒之門": "幻覺帽 T（尺寸顏色以現場為主，換完為止）"
+      "鏡像之門": "商品折價卷 95折（現當天使用）",
+      "錯視之門": "桿道夫第二人8折",
+      "無限之門": "品牌商品 100 元任選（可補差價，現當天使用）",
+      "顛倒之門": "幻覺帽踢 （尺寸顏色以現場為主，換完為止，現當天使用）"
     };
 
     let userLineId = "";
@@ -199,6 +208,8 @@
     async function initLIFF() {
       try {
         await liff.init({ liffId: MY_LIFF_ID });
+
+        // 防繞過 1: 若非 LINE 環境或未登入，強制導向 LINE 登入
         if (!liff.isLoggedIn()) {
           liff.login();
           return;
@@ -208,8 +219,15 @@
         userLineId = profile.userId;
         userDisplayName = profile.displayName || "LINE 用戶";
 
+        // 防繞過 2: 無法取得有效 userId 時禁止操作
+        if (!userLineId) {
+          showBlockScreen();
+          return;
+        }
+
         document.getElementById('loading').style.display = 'none';
 
+        // 檢查該用戶是否已有抽取紀錄
         const existingData = localStorage.getItem(STORAGE_KEY + userLineId);
         if (existingData) {
           const record = JSON.parse(existingData);
@@ -218,11 +236,23 @@
           document.getElementById('game-view').style.display = 'block';
         }
       } catch (err) {
-        document.getElementById('loading').innerText = "載入失敗，請確認是由 LINE 內開啟連結。";
+        showBlockScreen();
       }
     }
 
+    function showBlockScreen() {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('game-view').style.display = 'none';
+      document.getElementById('result-view').style.display = 'none';
+      document.getElementById('block-view').style.display = 'block';
+    }
+
     function openDoor(doorName, doorImg) {
+      if (!userLineId) {
+        alert("尚未成功驗證 LINE 帳號，無法開啟！");
+        return;
+      }
+
       const prize = PRIZES[doorName];
       const record = {
         door: doorName,
@@ -235,7 +265,6 @@
       localStorage.setItem(STORAGE_KEY + userLineId, JSON.stringify(record));
       showResult(doorName, prize, doorImg, false);
 
-      // 送出至 Google 試算表
       fetch(GOOGLE_SHEET_API, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -274,6 +303,8 @@
     }
 
     function verifyRedemption() {
+      if (!userLineId) return;
+
       const isConfirmed = confirm("【店員核銷確認】\n確認已發放獎品或折抵？\n按下確認後此優惠券將立即作廢失效！");
       if (isConfirmed) {
         const record = JSON.parse(localStorage.getItem(STORAGE_KEY + userLineId));
@@ -281,7 +312,6 @@
         localStorage.setItem(STORAGE_KEY + userLineId, JSON.stringify(record));
         showResult(record.door, record.prize, record.image, true);
 
-        // 更新狀態至 Google 試算表
         fetch(GOOGLE_SHEET_API, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
