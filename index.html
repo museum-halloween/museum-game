@@ -189,6 +189,7 @@
     </div>
   </div>
 
+  <!-- 隱藏表單：穿透提交寫入試算表 -->
   <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
   <form id="gas_form" method="POST" target="hidden_iframe" style="display:none;">
     <input type="hidden" name="action" id="f_action">
@@ -200,7 +201,9 @@
 
   <script>
     const MY_LIFF_ID = "2011876398-juvGs4G3";
-    const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbxs5MJ-_vZg_1lRqmOQp8kvpKv8eVn-u159w5ciC0Mhk2XNNDEk4ur5Iio5eqbSSIFK2A/exec";
+    
+    // ✅ 已更新為最新專屬部署網址
+    const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbz1LVOyHjo-0ZW4aGlkOEd83SlhR_alZLbvilL4yo6xG5J8hugIh7xbeP7jLF17d-sy8A/exec";
 
     const PRIZES = {
       "鏡像之門": "商品折價卷 95折（現當天使用）",
@@ -211,7 +214,7 @@
 
     let userLineId = "";
     let userDisplayName = "";
-    const STORAGE_KEY = "halloween_2026_museum_final_";
+    const STORAGE_KEY = "halloween_museum_2026_bind_";
     let isDrawing = false;
 
     function submitToGoogle(params) {
@@ -245,6 +248,7 @@
 
         document.getElementById('loading').style.display = 'none';
 
+        // 檢查該用戶是否已抽過
         const existingData = localStorage.getItem(STORAGE_KEY + userLineId);
         if (existingData) {
           const record = JSON.parse(existingData);
@@ -287,6 +291,7 @@
         timestamp: new Date().toISOString()
       };
 
+      // 永久綁定紀錄，防止重複抽
       localStorage.setItem(STORAGE_KEY + userLineId, JSON.stringify(record));
       showResult(doorName, prize, doorImg, false);
 
