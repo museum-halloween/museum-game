@@ -128,7 +128,6 @@
       font-weight: bold;
       cursor: pointer;
       width: 100%;
-      transition: background 0.2s;
     }
     button.staff-btn:disabled {
       background: #475569;
@@ -193,8 +192,8 @@
   <script>
     const MY_LIFF_ID = "2011876398-juvGs4G3";
     
-    // ✅ 已更新為你剛剛發布的最新網址
-    const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbxrd_C0YlDHzdrhlYjDJ2XZqqfukP6mwZGcLTfoKQEFfOneSLKkYFFbdu7-rOkltpY5Xw/exec";
+    // ✅ 已更新為你最新的 API 網址
+    const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbwyuBzrDSoSvLBH5I0-a7qWeBk4-FtcP9NDmjF-EseRrHn2xzUJaU4PmEigA6NOIvCNGA/exec";
 
     const PRIZES = {
       "鏡像之門": "商品折價卷 95折（現當天使用）",
@@ -205,7 +204,8 @@
 
     let userLineId = "";
     let userDisplayName = "";
-    const STORAGE_KEY = "halloween_museum_record_v4_";
+    // 改用全新 KEY 避免手機被以前的舊紀錄咬住
+    const STORAGE_KEY = "halloween_museum_record_final_";
 
     async function initLIFF() {
       try {
@@ -264,7 +264,6 @@
       localStorage.setItem(STORAGE_KEY + userLineId, JSON.stringify(record));
       showResult(doorName, prize, doorImg, false);
 
-      // 以 no-cors 模式確保抽獎資料穩定寫入試算表
       fetch(GOOGLE_SHEET_API, {
         method: "POST",
         mode: "no-cors",
