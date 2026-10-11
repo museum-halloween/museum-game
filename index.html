@@ -108,7 +108,7 @@
     .badge-available { background: #2e7d32; color: #fff; }
     .badge-redeemed { background: #c62828; color: #fff; }
     .staff-box {
-      border-top: 1px dashed #33536d;
+      border-top: 1px border-top: 1px dashed #33536d;
       margin-top: 16px;
       padding-top: 16px;
     }
@@ -189,21 +189,11 @@
     </div>
   </div>
 
-  <!-- 隱藏表單：穿透提交寫入試算表 -->
-  <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-  <form id="gas_form" method="POST" target="hidden_iframe" style="display:none;">
-    <input type="hidden" name="action" id="f_action">
-    <input type="hidden" name="userId" id="f_userId">
-    <input type="hidden" name="userName" id="f_userName">
-    <input type="hidden" name="door" id="f_door">
-    <input type="hidden" name="prize" id="f_prize">
-  </form>
-
   <script>
     const MY_LIFF_ID = "2011876398-juvGs4G3";
     
-    // ✅ 已更新為全新 Google Apps Script 部署網址
-    const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbxrJVphuvIcVnj94t3rTKimeMVvZcMbO40HZT4nvHWudK3akwvYR_TqS8KID6x9BRAWeA/exec";
+    // ✅ 已更新為您的全新後端 API 網址
+    const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbxOMJRhQgn9xlkqA2VyZwgFeWnBFRc3pM6gH1FWkF007UKDl6QgMT64SdOCdA_H9Yvz/exec";
 
     const PRIZES = {
       "鏡像之門": "商品折價卷 95折（現當天使用）",
@@ -217,15 +207,21 @@
     const STORAGE_KEY = "halloween_museum_2026_bind_";
     let isDrawing = false;
 
+    // ✅ 改用穩定且不受跨網域阻擋的傳輸方式
     function submitToGoogle(params) {
-      const form = document.getElementById('gas_form');
-      form.action = GOOGLE_SHEET_API;
-      document.getElementById('f_action').value = params.action || "";
-      document.getElementById('f_userId').value = params.userId || "";
-      document.getElementById('f_userName').value = params.userName || "";
-      document.getElementById('f_door').value = params.door || "";
-      document.getElementById('f_prize').value = params.prize || "";
-      form.submit();
+      const formData = new URLSearchParams();
+      for (const key in params) {
+        formData.append(key, params[key]);
+      }
+
+      fetch(GOOGLE_SHEET_API, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: formData.toString(),
+        mode: "no-cors"
+      }).catch(err => console.error("傳送紀錄失敗:", err));
     }
 
     async function initLIFF() {
