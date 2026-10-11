@@ -108,7 +108,7 @@
     .badge-available { background: #2e7d32; color: #fff; }
     .badge-redeemed { background: #c62828; color: #fff; }
     .staff-box {
-      border-top: 1px border-top: 1px dashed #33536d;
+      border-top: 1px dashed #33536d;
       margin-top: 16px;
       padding-top: 16px;
     }
@@ -192,14 +192,14 @@
   <script>
     const MY_LIFF_ID = "2011876398-juvGs4G3";
     
-    // ✅ 已更新為您的全新後端 API 網址
-    const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbxOMJRhQgn9xlkqA2VyZwgFeWnBFRc3pM6gH1FWkF007UKDl6QgMT64SdOCdA_H9Yvz/exec";
+    // ✅ 已更新為您的正確後端 API 網址
+    const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbz1LVOyHjo-0ZW4aGlkOEd83SlhR_alZLbvilL4yo6xG5J8hugIh7xbeP7jLF17d-sy8A/exec";
 
     const PRIZES = {
       "鏡像之門": "商品折價卷 95折（現當天使用）",
       "錯視之門": "桿道夫第二人8折",
       "無限之門": "品牌商品 100 元任選（可補差價，現當天使用）",
-      "顛倒之門": "幻覺帽踢 （尺寸顏色以現場為主，換完為止，現當天使用）"
+      "顛倒之門": "桿道夫第二人8折"
     };
 
     let userLineId = "";
@@ -207,7 +207,6 @@
     const STORAGE_KEY = "halloween_museum_2026_bind_";
     let isDrawing = false;
 
-    // ✅ 改用穩定且不受跨網域阻擋的傳輸方式
     function submitToGoogle(params) {
       const formData = new URLSearchParams();
       for (const key in params) {
