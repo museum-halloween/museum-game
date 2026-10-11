@@ -193,8 +193,8 @@
   <script>
     const MY_LIFF_ID = "2011876398-juvGs4G3";
     
-    // ✅ 已替換為你剛剛提供的最新部署 API 網址
-    const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbylgdl0wKcjyYunHmiG7HOpPleSnK8MfsiMr5ecqlIGthOzStx4e22wC6kBhO8ECwleDw/exec";
+    // ✅ 已更新為你剛剛發布的最新網址
+    const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbxrd_C0YlDHzdrhlYjDJ2XZqqfukP6mwZGcLTfoKQEFfOneSLKkYFFbdu7-rOkltpY5Xw/exec";
 
     const PRIZES = {
       "鏡像之門": "商品折價卷 95折（現當天使用）",
@@ -205,7 +205,7 @@
 
     let userLineId = "";
     let userDisplayName = "";
-    const STORAGE_KEY = "halloween_museum_record_v3_";
+    const STORAGE_KEY = "halloween_museum_record_v4_";
 
     async function initLIFF() {
       try {
@@ -264,7 +264,7 @@
       localStorage.setItem(STORAGE_KEY + userLineId, JSON.stringify(record));
       showResult(doorName, prize, doorImg, false);
 
-      // 以 no-cors 模式確保抽獎紀錄直接穿透寫入試算表
+      // 以 no-cors 模式確保抽獎資料穩定寫入試算表
       fetch(GOOGLE_SHEET_API, {
         method: "POST",
         mode: "no-cors",
@@ -314,7 +314,6 @@
       btn.innerText = "核銷處理中...";
 
       try {
-        // 以 no-cors 模式發送核銷請求，避免被 302 重新導向阻擋
         await fetch(GOOGLE_SHEET_API, {
           method: "POST",
           mode: "no-cors",
@@ -325,7 +324,6 @@
           })
         });
 
-        // 更新前端畫面與儲存紀錄
         const record = JSON.parse(localStorage.getItem(STORAGE_KEY + userLineId)) || {};
         record.redeemed = true;
         localStorage.setItem(STORAGE_KEY + userLineId, JSON.stringify(record));
