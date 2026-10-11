@@ -189,10 +189,18 @@
     </div>
   </div>
 
+  <!-- 隱藏 Form 表單提交元件，穿透所有 CORS 與瀏覽器限制 -->
+  <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+  <form id="gas_form" method="POST" target="hidden_iframe" style="display:none;">
+    <input type="hidden" name="action" id="f_action">
+    <input type="hidden" name="userId" id="f_userId">
+    <input type="hidden" name="userName" id="f_userName">
+    <input type="hidden" name="door" id="f_door">
+    <input type="hidden" name="prize" id="f_prize">
+  </form>
+
   <script>
     const MY_LIFF_ID = "2011876398-juvGs4G3";
-    
-    // ✅ 已更新為你最新的 API 網址
     const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbwyuBzrDSoSvLBH5I0-a7qWeBk4-FtcP9NDmjF-EseRrHn2xzUJaU4PmEigA6NOIvCNGA/exec";
 
     const PRIZES = {
@@ -204,8 +212,19 @@
 
     let userLineId = "";
     let userDisplayName = "";
-    // 改用全新 KEY 避免手機被以前的舊紀錄咬住
-    const STORAGE_KEY = "halloween_museum_record_final_";
+    const STORAGE_KEY = "halloween_museum_record_v5_";
+
+    // 透過 Form 表單強制提交給 Google
+    function submitToGoogle(params) {
+      const form = document.getElementById('gas_form');
+      form.action = GOOGLE_SHEET_API;
+      document.getElementById('f_action').value = params.action || "";
+      document.getElementById('f_userId').value = params.userId || "";
+      document.getElementById('f_userName').value = params.userName || "";
+      document.getElementById('f_door').value = params.door || "";
+      document.getElementById('f_prize').value = params.prize || "";
+      form.submit();
+    }
 
     async function initLIFF() {
       try {
@@ -264,18 +283,14 @@
       localStorage.setItem(STORAGE_KEY + userLineId, JSON.stringify(record));
       showResult(doorName, prize, doorImg, false);
 
-      fetch(GOOGLE_SHEET_API, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({
-          action: "draw",
-          userId: userLineId,
-          userName: userDisplayName,
-          door: doorName,
-          prize: prize
-        })
-      }).catch(err => console.log(err));
+      // 強制寫入抽獎紀錄
+      submitToGoogle({
+        action: "draw",
+        userId: userLineId,
+        userName: userDisplayName,
+        door: doorName,
+        prize: prize
+      });
     }
 
     function showResult(doorName, prize, doorImg, isRedeemed) {
@@ -302,7 +317,7 @@
       }
     }
 
-    async function verifyRedemption() {
+    function verifyRedemption() {
       if (!userLineId) return;
 
       const isConfirmed = confirm("【店員核銷確認】\n確認已發放獎品或折抵？\n按下確認後此優惠券將立即作廢失效！");
@@ -310,30 +325,20 @@
 
       const btn = document.getElementById('redeem-btn');
       btn.disabled = true;
-      btn.innerText = "核銷處理中...";
+      btn.innerText = "已由櫃檯完成核銷";
 
-      try {
-        await fetch(GOOGLE_SHEET_API, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({
-            action: "redeem",
-            userId: userLineId
-          })
-        });
+      // 強制寫入核銷
+      submitToGoogle({
+        action: "redeem",
+        userId: userLineId
+      });
 
-        const record = JSON.parse(localStorage.getItem(STORAGE_KEY + userLineId)) || {};
-        record.redeemed = true;
-        localStorage.setItem(STORAGE_KEY + userLineId, JSON.stringify(record));
-        showResult(record.door, record.prize, record.image, true);
-        
-        alert("核銷完成！");
-      } catch (err) {
-        alert("連線失敗，請檢查網路後重試！");
-        btn.disabled = false;
-        btn.innerText = "店員專用核銷按鈕";
-      }
+      const record = JSON.parse(localStorage.getItem(STORAGE_KEY + userLineId)) || {};
+      record.redeemed = true;
+      localStorage.setItem(STORAGE_KEY + userLineId, JSON.stringify(record));
+      showResult(record.door, record.prize, record.image, true);
+      
+      alert("核銷完成！");
     }
 
     initLIFF();
