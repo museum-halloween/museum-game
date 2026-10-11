@@ -189,7 +189,6 @@
     </div>
   </div>
 
-  <!-- 隱藏表單：確保直接穿透寫入 Google 試算表 -->
   <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
   <form id="gas_form" method="POST" target="hidden_iframe" style="display:none;">
     <input type="hidden" name="action" id="f_action">
@@ -201,9 +200,7 @@
 
   <script>
     const MY_LIFF_ID = "2011876398-juvGs4G3";
-    
-    // ✅ 已更新為你剛剛取得的最新網址
-    const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbw6XW-cVfWsd4M32ygqTabMrKGQZoA09VUsIYGGj2kPnSRPaE_Yni6l9E0zdGpDuWoD0Q/exec";
+    const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbxs5MJ-_vZg_1lRqmOQp8kvpKv8eVn-u159w5ciC0Mhk2XNNDEk4ur5Iio5eqbSSIFK2A/exec";
 
     const PRIZES = {
       "鏡像之門": "商品折價卷 95折（現當天使用）",
@@ -214,8 +211,7 @@
 
     let userLineId = "";
     let userDisplayName = "";
-    // 更新 KEY 以重置測試狀態
-    const STORAGE_KEY = "halloween_museum_locked_v1_";
+    const STORAGE_KEY = "halloween_2026_museum_final_";
     let isDrawing = false;
 
     function submitToGoogle(params) {
@@ -249,7 +245,6 @@
 
         document.getElementById('loading').style.display = 'none';
 
-        // 檢查該用戶是否已抽過
         const existingData = localStorage.getItem(STORAGE_KEY + userLineId);
         if (existingData) {
           const record = JSON.parse(existingData);
